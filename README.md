@@ -5,5 +5,4 @@ Tag Recommendation for Instagram
 CSE 496 - Gradutaion Project GTU
 
 Turker Tercan
-
 Supervisor: Gokhan Kaya

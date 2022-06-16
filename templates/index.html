@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Instagram Hashtag Recommender</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    {% if filename %}
+        <script type="text/javascript">
+            function updateRating(hashtag, rating, filename, index) {
+                document.getElementById('1-'+hashtag).setAttribute('disabled', 'false');
+                document.getElementById('2-'+hashtag).setAttribute('disabled', 'false');
+                document.getElementById('3-'+hashtag).setAttribute('disabled', 'false');
+                document.getElementById('4-'+hashtag).setAttribute('disabled', 'false');
+                document.getElementById('5-'+hashtag).setAttribute('disabled', 'false');
+
+                $.ajax({
+                    url: '/hashtag_rate',
+                    headers: {"Content-Type": "application/json"},
+                    type: 'POST',
+                    data: JSON.stringify({'hashtag': hashtag, 'rating': rating, 'filename': filename, 'index': index })
+                });
+            }
+        </script>
+    {% endif %}
+
+
+</head>
+<body>
+<p><h1 style="text-align: center">Instagram Hashtag Recommender</h1>
+<div class="container">
+        {% if not filename %}
+            <h4 style="text-align: center">Aim for this project, predicting Instagram hashtags for a submitted image. <br>After you upload an image, recommendation results will be shown.</h4>
+        {% endif %}
+        <h2 style="margin-left: 100px">Select a file to upload</h2>
+        <ul>
+            <li style="margin-left: 150px">JPG, JPEG, PNG formats are allowed for upload.</li>
+            <li style="margin-left: 150px">Please do not upload if your image file larger than 1MB</li>
+        </ul>
+        <p>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <ul>
+                    {% for message in messages %}
+                        <li style="margin-left: 150px">{{ message }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endwith %}
+        {% if filename %}
+            <div>
+                <img src="{{ url_for('display_image', filename=filename) }}" alt="{{ filename }}">
+                <h3 style="text-align: center">Produced Hashtags are listed below.</h3>
+                <h4 style="text-align: center">
+                    Hashtags are sorted according to their calculated percentage values. Object and scene features are used to calculate predictions.
+                    <br> Thank you in advance for evaluating and rating on each hashtag in relation to the photo you submitted.
+                </h4>
+                <table>
+                    <tr>
+                        <th>
+                            <h4>Percentage values are indicating that how the assumption is strong for the given specific image.<br>You can assume that produced hashtag percentage values as below: </h4>
+                        </th>
+                        <th>&nbsp;</th>
+                        <th>
+                            <h4>Please submit your ratings whether the hashtags are related to the image you uploaded: </h4>
+                        </th>
+                    </tr>
+
+                    <tr>
+                        <td><ul>
+                            <h5><li style="text-align: left">Percentage:&nbsp;&nbsp;&nbsp;0%&nbsp;--&nbsp;&nbsp;&nbsp;20%&nbsp;->&nbsp;Bad</li></h5>
+                            <h5><li style="text-align: left">Percentage:&nbsp;20%&nbsp;--&nbsp;&nbsp;&nbsp;40%&nbsp;->&nbsp;Not Bad</li></h5>
+                            <h5><li style="text-align: left">Percentage:&nbsp;40%&nbsp;--&nbsp;&nbsp;&nbsp;60%&nbsp;->&nbsp;Average</li></h5>
+                            <h5><li style="text-align: left">Percentage:&nbsp;60%&nbsp;--&nbsp;&nbsp;&nbsp;80%&nbsp;->&nbsp;Good</li></h5>
+                            <h5><li style="text-align: left">Percentage:&nbsp;80%&nbsp;--&nbsp;100%&nbsp;->&nbsp;Very Good</li></h5>
+                        </ul></td>
+                        <td style="width: 10px">&nbsp;</td>
+                        <td><ul>
+                            <h5><li style="text-align: left">1 Star -> Bad Relevancy</li></h5>
+                            <h5><li style="text-align: left">2 Stars -> Not Bad Relevancy</li></h5>
+                            <h5><li style="text-align: left">3 Stars -> Average Relevancy</li></h5>
+                            <h5><li style="text-align: left">4 Stars -> Good Relevancy</li></h5>
+                            <h5><li style="text-align: left">5 Stars -> Very Good Relevancy</li></h5>
+                        </ul></td>
+                    </tr>
+                </table>
+
+
+                <table class="result_table">
+                    <tr>
+                        <th>Hashtag</th>
+                        <th>Percentage</th>
+{#                        <th>Average Rating</th>#}
+                        <th>Your Rating</th>
+                        <th>&emsp;</th>
+                        <th>Hashtag</th>
+                        <th>Percentage</th>
+{#                        <th>Average Rating</th>#}
+                        <th>Your Rating</th>
+                    </tr>
+                    {% for i in range(0, len_f) %}
+                        <tr>
+                            <td class="result_row_left">{{ first[i][0] }}</td>
+                            <td class="result_row_middle">{{ first[i][1] | confidence_format }}</td>
+{#                            <td class="result_row_middle">{{ first[i][2] | average_format }}</td>#}
+                            <td class="result_row_right"><div class="rating-0">
+                                    <input type="radio" name="rating-{{ first[i][0] }}" value="5-{{ first[i][0] }}" id="5-{{ first[i][0] }}"
+                                           onclick="updateRating('{{ first[i][0] }}', 5, '{{ filename }}', {{ i * 2 }})">
+                                        <label for="5-{{ first[i][0] }}">☆</label>
+                                    <input type="radio" name="rating-{{ first[i][0] }}" value="4-{{ first[i][0] }}" id="4-{{ first[i][0] }}"
+                                           onclick="updateRating('{{ first[i][0] }}', 4, '{{ filename }}', {{ i * 2 }})">
+                                        <label for="4-{{ first[i][0] }}">☆</label>
+                                    <input type="radio" name="rating-{{ first[i][0] }}" value="3-{{ first[i][0] }}" id="3-{{ first[i][0] }}"
+                                           onclick="updateRating('{{ first[i][0] }}', 3, '{{ filename }}', {{ i * 2 }})">
+                                        <label for="3-{{ first[i][0] }}">☆</label>
+                                    <input type="radio" name="rating-{{ first[i][0] }}" value="2-{{ first[i][0] }}" id="2-{{ first[i][0] }}"
+                                           onclick="updateRating('{{ first[i][0] }}', 2, '{{ filename }}', {{ i * 2 }})">
+                                        <label for="2-{{ first[i][0] }}">☆</label>
+                                    <input type="radio" name="rating-{{ first[i][0] }}" value="1-{{ first[i][0] }}" id="1-{{ first[i][0] }}"
+                                           onclick="updateRating('{{ first[i][0] }}', 1, '{{ filename }}', {{ i * 2 }})">
+                                        <label for="1-{{ first[i][0] }}">☆</label>
+                                </div></td>
+                            <td>&emsp;</td>
+                            {% if i < len_s %}
+                                <td class="result_row_left">{{ second[i][0] }}</td>
+                                <td class="result_row_middle">{{ second[i][1] | confidence_format }}</td>
+{#                                <td class="result_row_middle">{{ second[i][2] | average_format }}</td>#}
+                                <td class="result_row_right"><div class="rating-0">
+                                    <input type="radio" name="rating-{{ second[i][0] }}" value="5-{{ second[i][0] }}" id="5-{{ second[i][0] }}"
+                                           onclick="updateRating('{{ second[i][0] }}', 5, '{{ filename }}', {{ (i * 2) + 1 }})">
+                                        <label for="5-{{ second[i][0] }}">☆</label>
+                                    <input type="radio" name="rating-{{ second[i][0] }}" value="4-{{ second[i][0] }}" id="4-{{ second[i][0] }}"
+                                           onclick="updateRating('{{ second[i][0] }}', 4, '{{ filename }}', {{ (i * 2) + 1 }})">
+                                        <label for="4-{{ second[i][0] }}">☆</label>
+                                    <input type="radio" name="rating-{{ second[i][0] }}" value="3-{{ second[i][0] }}" id="3-{{ second[i][0] }}"
+                                           onclick="updateRating('{{ second[i][0] }}', 3, '{{ filename }}', {{ (i * 2) + 1 }})">
+                                        <label for="3-{{ second[i][0] }}">☆</label>
+                                    <input type="radio" name="rating-{{ second[i][0] }}" value="2-{{ second[i][0] }}" id="2-{{ second[i][0] }}"
+                                           onclick="updateRating('{{ second[i][0] }}', 2, '{{ filename }}', {{ (i * 2) + 1 }})">
+                                        <label for="2-{{ second[i][0] }}">☆</label>
+                                    <input type="radio" name="rating-{{ second[i][0] }}" value="1-{{ second[i][0] }}" id="1-{{ second[i][0] }}"
+                                           onclick="updateRating('{{ second[i][0] }}', 1, '{{ filename }}', {{ (i * 2) + 1 }})">
+                                        <label for="1-{{ second[i][0] }}">☆</label>
+                                </div></td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endif %}
+        <form method="post" action="/result/" enctype="multipart/form-data">
+            <dl>
+                <p>
+                    <input type="file" name="file" class="form-control" autocomplete="off" required>
+                </p>
+            </dl>
+            <p>
+                <input type="submit" value="Submit" class="btn-info">
+            </p>
+        </form>
+</div>
+</body>
+</html>
